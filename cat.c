@@ -13,16 +13,26 @@ Options parse_args(int argc, char *argv[]) {
 
   for (int i = 1; i < argc; i++) {
     if (argv[i][0] == '-') {
-      if (strcmp(argv[i], "-n") == 0) {
-        opts.show_line_nums = true;
-      } else if (strcmp(argv[i], "-b") == 0) {
-        opts.blank_lines = true;
-      } else if (strcmp(argv[i], "-e") == 0) {
-        opts.show_end_lines = true;
-      } else if (strcmp(argv[i], "-t") == 0) {
-        opts.show_tab = true;
-      } else if (strcmp(argv[i], "-s") == 0) {
-        opts.squaze_lines = true;
+      for (size_t j = 1; j < strlen(argv[i]); j++) {
+        switch (argv[i][j]) {
+        case 'n':
+          opts.show_end_lines = true;
+          break;
+        case 'b':
+          opts.blank_lines = true;
+          break;
+        case 'e':
+          opts.show_end_lines = true;
+          break;
+        case 't':
+          opts.show_tab = true;
+          break;
+        case 's':
+          opts.squaze_lines = true;
+          break;          
+        default:
+          break;
+        }
       }
     } else {
       opts.filename = argv[i];

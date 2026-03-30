@@ -1,7 +1,6 @@
-#include <stdbool.h>
+#include "cat.h"
 #include <stdio.h>
 #include <string.h>
-
 // you should have struct contains: bools and filename
 // 3 functions main, print_file and parse_args
 // main contains: the enough argc and argv provided also the exta functions
@@ -9,14 +8,8 @@
 // -b -n with strcmp print_file: chccks not empty, writes lines based onl flags
 // and counts line numbers.
 
-typedef struct {
-  bool show_line_nums;
-  bool blank_lines;
-  const char *filename;
-} Options;
-
 Options parse_args(int argc, char *argv[]) {
-  Options opts = {false, false, NULL};
+  Options opts = {false, false, false, false, false, NULL};
 
   for (int i = 1; i < argc; i++) {
     if (argv[i][0] == '-') {
@@ -24,6 +17,12 @@ Options parse_args(int argc, char *argv[]) {
         opts.show_line_nums = true;
       } else if (strcmp(argv[i], "-b") == 0) {
         opts.blank_lines = true;
+      } else if (strcmp(argv[i], "-e") == 0) {
+        opts.show_end_lines = true;
+      } else if (strcmp(argv[i], "-t") == 0) {
+        opts.show_tab = true;
+      } else if (strcmp(argv[i], "-s") == 0) {
+        opts.squaze_lines = true;
       }
     } else {
       opts.filename = argv[i];
@@ -32,7 +31,8 @@ Options parse_args(int argc, char *argv[]) {
   return opts;
 }
 
-void print_file(const char *filename, bool show_line_num, bool blank_lines) {
+void print_file(const char *filename, bool show_line_num, bool blank_lines,
+                bool show_end_lines, bool show_tab, bool squaze_lines) {
   FILE *file = fopen(filename, "r");
 
   if (file == NULL) {
@@ -42,19 +42,46 @@ void print_file(const char *filename, bool show_line_num, bool blank_lines) {
 
   char line[1024];
   int line_num = 1;
+  bool prev_is_blank = false;
 
   while (fgets(line, sizeof(line), file) != NULL) {
-    if (blank_lines && line[0] == '\n') {
-      line_num++;
+
+    bool is_blank = (line[0] == '\n');
+
+    if (squaze_lines && is_blank && prev_is_blank) {
       continue;
+    }
+
+    prev_is_blank = is_blank;
+
+    if (blank_lines && line[0] != '\n') {
+      printf("%d:", line_num);
+      line_num++;
     }
 
     if (show_line_num) {
       printf("%d:", line_num);
+      line_num++;
     }
 
-    printf("%s", line);
-    line_num++;
+    size_t len = strlen(line);
+    if (len > 0 && line[len - 1] == '\n') {
+      line[len - 1] = '\0';
+    }
+
+    for (int i = 0; line[i] != '\0'; i++) {
+      if (show_tab && line[i] == '\t') {
+        printf("^I");
+      } else {
+        printf("%c", line[i]);
+      }
+    }
+
+    if (show_end_lines) {
+      printf("$");
+    }
+
+    printf("\n");
   }
   fclose(file);
 }
@@ -72,6 +99,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  print_file(opts.filename, opts.show_line_nums, opts.blank_lines);
+  print_file(opts.filename, opts.show_line_nums, opts.blank_lines,
+             opts.show_end_lines, opts.show_tab, opts.squaze_lines);
   return 0;
 }

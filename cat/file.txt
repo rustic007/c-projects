@@ -1,0 +1,9 @@
+Line 1: Hello, World! 1234567890
+
+	Line 2: Special chars: !@#$%^&*()_+-=[]{}|;':",.<>?/`~
+
+
+Line 3: Tabs	and   extra   spaces
+
+Line 4: UPPERCASE and   lowercase
+Line 5: émojis 🎉 and ünïcödé characters

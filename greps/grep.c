@@ -25,10 +25,7 @@ static void regex_print(const Options *opts, char line[], regex_t regex, const c
   }
 
   if (should_print) {
-    if (opts->list_file) {
-      printf("%s\n", FILE_NAME);
-      return;
-    } else if (opts->show_list_file) {
+    if (opts->show_list_file) {
       printf("%s: %s\n", FILE_NAME, line);
     } else if (opts->number_lines) {
       printf("%d: %s\n", line_num, line);
@@ -167,6 +164,7 @@ void grep_implement(const char* FILE_NAME, const char* PATTERN,
   size_t line_len = 0;
   int line_num = 0;
   ssize_t bytes_read;
+  bool found_match = false;
 
   while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0) {
     for (ssize_t i = 0; i < bytes_read; i++) {
@@ -175,7 +173,11 @@ void grep_implement(const char* FILE_NAME, const char* PATTERN,
       if (ch == '\n' || line_len == sizeof(line) - 1) {
         line[line_len] = '\0';
         line_num++;
-        regex_print(opts, line, regex, FILE_NAME, line_num, content);      
+        regex_print(opts, line, regex, FILE_NAME, line_num, content);
+        if (opts->list_file) {
+          printf("%s", FILE_NAME);
+          break;
+        }      
         line_len = 0;
       } else {
         line[line_len++] = ch;
@@ -188,7 +190,11 @@ void grep_implement(const char* FILE_NAME, const char* PATTERN,
     line_num++;
 
     regex_print(opts, line, regex, FILE_NAME, line_num, content);
+    if (opts->list_file) {
+      printf("%s", FILE_NAME);
+    }
   }
+
 
   regfree(&regex);
   close(fd);
